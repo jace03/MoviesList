@@ -1,0 +1,26 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('movies', function (Blueprint $table) {
+            $table->string('title')->after('id');
+            $table->string('genre')->after('title');
+            $table->string('decade')->after('genre');
+            $table->string('holiday')->nullable()->after('decade');
+            $table->integer('rank')->unsigned()->after('holiday');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('movies', function (Blueprint $table) {
+            $table->dropColumn(['title', 'genre', 'decade', 'holiday', 'rank']);
+        });
+    }
+};
