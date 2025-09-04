@@ -14,6 +14,133 @@ class MovieSeeder extends Seeder
     {
         $movies = [
             [
+                'title' => 'Hocus Pocus',
+                'genre' => 'Fantasy/Comedy',
+                'decade' => '1990s',
+                'holiday' => 'Halloween',
+            ],
+            [
+                'title' => 'Hocus Pocus 2',
+                'genre' => 'Fantasy/Comedy',
+                'decade' => '2020s',
+                'holiday' => 'Halloween',
+            ],
+            [
+                'title' => 'Hubie Halloween',
+                'genre' => 'Comedy',
+                'decade' => '2020s',
+                'holiday' => 'Halloween',
+            ],
+            [
+                'title' => 'Locke & Key',
+                'genre' => 'Fantasy/Horror',
+                'decade' => '2020s',
+                'holiday' => 'Halloween',
+            ],
+            [
+                'title' => 'The Office Halloween Episode',
+                'genre' => 'Comedy/TV',
+                'decade' => '2000s',
+                'holiday' => 'Halloween',
+            ],
+            [
+                'title' => 'Brooklyn Nine-Nine Heists',
+                'genre' => 'Comedy/TV',
+                'decade' => '2010s',
+                'holiday' => 'Halloween',
+            ],
+            [
+                'title' => 'Zombieland',
+                'genre' => 'Comedy/Horror',
+                'decade' => '2000s',
+                'holiday' => 'Halloween',
+            ],
+            [
+                'title' => 'The Craft',
+                'genre' => 'Supernatural/Thriller',
+                'decade' => '1990s',
+                'holiday' => 'Halloween',
+            ],
+            [
+                'title' => 'The Craft: Legacy',
+                'genre' => 'Supernatural/Thriller',
+                'decade' => '2020s',
+                'holiday' => 'Halloween',
+            ],
+            [
+                'title' => 'Beetlejuice',
+                'genre' => 'Fantasy/Comedy',
+                'decade' => '1980s',
+                'holiday' => 'Halloween',
+            ],
+            [
+                'title' => 'Beetlejuice Beetlejuice',
+                'genre' => 'Fantasy/Comedy',
+                'decade' => '2020s',
+                'holiday' => 'Halloween',
+            ],
+            [
+                'title' => 'Queen of the Damned',
+                'genre' => 'Horror/Vampire',
+                'decade' => '2000s',
+                'holiday' => 'Halloween',
+            ],
+            [
+                'title' => 'Interview with the Vampire',
+                'genre' => 'Gothic Horror',
+                'decade' => '1990s',
+                'holiday' => 'Halloween',
+            ],
+            [
+                'title' => 'Goosebumps',
+                'genre' => 'Family/Horror',
+                'decade' => '2010s',
+                'holiday' => 'Halloween',
+            ],
+            [
+                'title' => 'Goosebumps 2: Haunted Halloween',
+                'genre' => 'Family/Horror',
+                'decade' => '2010s',
+                'holiday' => 'Halloween',
+            ],
+            [
+                'title' => 'Casper',
+                'genre' => 'Fantasy/Family',
+                'decade' => '1990s',
+                'holiday' => 'Halloween',
+            ],
+            [
+                'title' => 'Bewitched',
+                'genre' => 'Fantasy/Rom-Com',
+                'decade' => '2000s',
+                'holiday' => 'Halloween',
+            ],
+            [
+                'title' => 'Fright Night',
+                'genre' => 'Horror/Vampire',
+                'decade' => '1980s',
+                'holiday' => 'Halloween',
+            ],
+            [
+                'title' => 'Hotel Transylvania',
+                'genre' => 'Family/Comedy',
+                'decade' => '2010s',
+                'holiday' => 'Halloween',
+            ],
+            [
+                'title' => 'Hotel Transylvania 2',
+                'genre' => 'Family/Comedy',
+                'decade' => '2010s',
+                'holiday' => 'Halloween',
+            ],
+            [
+                'title' => 'Hotel Transylvania 3',
+                'genre' => 'Family/Comedy',
+                'decade' => '2010s',
+                'holiday' => 'Halloween',
+            ],
+
+            [
                 'title' => 'The Grinch',
                 'genre' => 'Family/Comedy',
                 'decade' => '2000s',
@@ -164,4 +291,5 @@ class MovieSeeder extends Seeder
 
         DB::table('movies')->insert($movies);
     }
+
 }
