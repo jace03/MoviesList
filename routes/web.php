@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActorController;
 use App\Http\Controllers\MovieController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,3 +20,10 @@ Route::get('/movies/{id}', [MovieController::class, 'show'])->name('movies.show'
 Route::get('/movies/{id}/edit', [MovieController::class, 'edit'])->name('movies.edit');
 Route::put('/movies/{id}', [MovieController::class, 'update'])->name('movies.update');
 Route::delete('/movies/{id}', [MovieController::class, 'destroy'])->name('movies.destroy');
+Route::post('/actors/bulk', [ActorController::class, 'bulkStore']);
+Route::put('/movies/{id}', [MovieController::class, 'update'])->name('movies.update');
+Route::get('movies/{id}/actors', [MovieController::class, 'editActors'])
+    ->name('movies.editActors');
+
+Route::put('movies/{id}/actors', [MovieController::class, 'updateActors'])
+    ->name('movies.updateActors');

@@ -25,15 +25,15 @@ class Movie extends Model
      */
     protected $casts = [
         'Decade' => 'string',
-        'rank' => 'integer',
+        'rating' => 'integer',
     ];
 
     /**
-     * Scope to order by rank
+     * Scope to order by rating
      */
-    public function scopeOrderByRank($query)
+    public function scopeOrderByRating($query)
     {
-        return $query->orderBy('rank');
+        return $query->orderBy('rating');
     }
 
     /**
@@ -65,13 +65,13 @@ class Movie extends Model
      */
     public static function getByHoliday($holiday)
     {
-        return static::where('holiday', $holiday)->orderByRank()->get();
+        return static::where('holiday', $holiday)->orderByrating()->get();
     }
 
     /**
-     * Get the next available rank
+     * Get the next available rating
      */
-    public static function getNextRank($holiday = null)
+    public static function getNextrating($holiday = null)
     {
         $query = static::query();
 
@@ -79,6 +79,6 @@ class Movie extends Model
             $query->where('holiday', $holiday);
         }
 
-        return $query->max('rank') + 1;
+        return $query->max('rating') + 1;
     }
 }

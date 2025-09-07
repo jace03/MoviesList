@@ -36,22 +36,31 @@
             <table class="min-w-full divide-y divide-gray-700">
                 <thead class="bg-gray-800">
                 <tr>
-                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-400">Rank</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-400">Rating</th>
                     <th class="px-4 py-2 text-left text-sm font-medium text-gray-400">Title</th>
                     <th class="px-4 py-2 text-left text-sm font-medium text-gray-400">Genre</th>
                     <th class="px-4 py-2 text-left text-sm font-medium text-gray-400">Holiday</th>
                     <th class="px-4 py-2 text-left text-sm font-medium text-gray-400">Description</th>
+                    <th class="px-4 py-2 text-left text-sm font-medium text-gray-400">Actors</th>
                     <th class="px-4 py-2 text-left text-sm font-medium text-gray-400">Actions</th>
                 </tr>
                 </thead>
                 <tbody class="bg-gray-800 divide-y divide-gray-700">
                 @forelse ($movies as $movie)
                     <tr class="hover:bg-gray-700">
-                        <td class="px-4 py-2 text-sm text-gray-300">{{ $movie->getRank() ?? 'N/A' }}</td>
+                        <td class="px-4 py-2 text-sm text-gray-300">{{ $movie->getRating() ?? 'N/A' }}</td>
                         <td class="px-4 py-2 text-sm text-gray-300">{{ $movie->getTitle() ?? 'N/A' }}</td>
                         <td class="px-4 py-2 text-sm text-gray-300">{{ $movie->getGenre() ?? 'N/A' }}</td>
                         <td class="px-4 py-2 text-sm text-gray-300">{{ $movie->getHoliday() ?? 'N/A' }}</td>
                         <td class="px-4 py-2 text-sm text-gray-300">{{ $movie->getDescription() ?? '' }}</td>
+                        <td class="px-4 py-2 text-sm text-gray-300">
+                            @if ($movie->getActors()->count())
+                                {{ implode(', ', $movie->getActors()->map(fn($actor) => $actor->getName())->toArray()) }}
+                            @else
+
+                            @endif
+                        </td>
+
                         <td class="px-4 py-2 text-sm text-gray-300 space-x-2">
                             <a href="{{ route('movies.show', $movie->getId()) }}"
                                class="text-blue-400 hover:text-blue-600">View</a>
@@ -82,3 +91,8 @@
         </div>
     </div>
 @endsection
+<script>
+    const movieId = @json($movie->getId());
+</script>
+
+<script src="{{ asset('javascript/actor-inputs.js') }}"></script>

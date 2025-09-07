@@ -44,11 +44,11 @@ class MovieController extends Controller
         return response()->json($movie);
     }
 
-    public function orderByRank(string $rank): JsonResponse
+    public function orderByRating(string $rating): JsonResponse
     {
-        $order = strtolower($rank) === 'desc' ? 'DESC' : 'ASC';
+        $order = strtolower($rating) === 'desc' ? 'DESC' : 'ASC';
 
-        $movies = $this->movieRepository->findAllOrderedByRank($order);
+        $movies = $this->movieRepository->findAllOrderedByRating($order);
 
         if (!$movies) {
             return response()->json(['error' => 'No movies found'], 404);
@@ -57,9 +57,9 @@ class MovieController extends Controller
         return response()->json($movies);
     }
 
-    public function rankedList(string $dire) : JsonResponse
+    public function ratingList(string $dire) : JsonResponse
     {
-        $movies = $this->movieRepository->findBy([], ['rank' => 'DESC']);
+        $movies = $this->movieRepository->findBy([], ['rating' => 'DESC']);
         return response()->json([
             'sorted' => true,
             'count' => count($movies),
@@ -73,7 +73,7 @@ class MovieController extends Controller
 //            'name' => 'required|string|max:255',
 //            'category' => 'required|string|max:255',
 //            'holiday' => 'nullable|string|max:255',
-//            'rank' => 'required|integer',
+//            'rating' => 'required|integer',
 //        ]);
 //
 //        if ($validator->fails()) {
@@ -87,7 +87,7 @@ class MovieController extends Controller
 //        $movie->setName($validated['name']);
 //        $movie->setCategory($validated['category']);
 //        $movie->setHoliday($validated['holiday'] ?? null);
-//        $movie->setRank($validated['rank']);
+//        $movie->setrating($validated['rating']);
 //
 //        $this->em->persist($movie);
 //        $this->em->flush();
@@ -116,8 +116,8 @@ class MovieController extends Controller
 //        if ($request->has('holiday')) {
 //            $movie->setHoliday($request->input('holiday'));
 //        }
-//        if ($request->has('rank')) {
-//            $movie->setRank((int) $request->input('rank'));
+//        if ($request->has('rating')) {
+//            $movie->setrating((int) $request->input('rating'));
 //        }
 //
 //        $this->em->flush();

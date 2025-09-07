@@ -2,9 +2,14 @@
 
 namespace App\Entities;
 
+use AllowDynamicProperties;
+use App\Repositories\MovieRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use App\Entities\Actor;
 
-#[ORM\Entity(repositoryClass: \App\Repositories\MovieRepository::class)]
+#[AllowDynamicProperties] #[ORM\Entity(repositoryClass: MovieRepository::class)]
 #[ORM\Table(name: 'movies')]
 class Movie
 {
@@ -22,8 +27,8 @@ class Movie
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
     private ?string $decade = null;
 
-    #[ORM\Column(name: '`rank`', type: 'integer', nullable: true)]
-    private ?int $rank = null;
+    #[ORM\Column(name: 'rating', type: 'integer', nullable: true)]
+    private ?int $rating = null;
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
@@ -31,13 +36,37 @@ class Movie
     #[ORM\Column(type: 'string', length: 100, nullable: true)]
     private ?string $holiday = null;
 
-    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    #[ORM\Column(name: 'created_at', type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column(type: 'datetime_immutable', nullable: true)]
+    #[ORM\Column(name: 'updated_at', type: 'datetime_immutable', nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    public function __construct() {}
+    #[ORM\ManyToMany(targetEntity: Actor::class, inversedBy: 'movies')]
+    #[ORM\JoinTable(name: 'movie_actor')]
+    private Collection $actors;
+
+    public function __construct()
+    {
+        $this->actors = new ArrayCollection();
+    }
+    public function getActors(): Collection
+    {
+        return $this->actors;
+    }
+    public function addActor(Actor $actor): void
+    {
+        if (!$this->actors->contains($actor)) {
+            $this->actors->add($actor);
+            $actor->addMovie($this);
+        }
+    }
+    public function removeActor(Actor $actor): void
+    {
+        if ($this->actors->removeElement($actor)) {
+            $actor->removeMovie($this);
+        }
+    }
 
     public static function all()
     {
@@ -83,14 +112,14 @@ class Movie
         $this->decade = $decade;
     }
 
-    public function getRank(): ?int
+    public function getRating(): ?int
     {
-        return $this->rank;
+        return $this->rating;
     }
 
-    public function setRank(?int $rank): void
+    public function setRating(?int $rating): void
     {
-        $this->rank = $rank;
+        $this->rating = $rating;
     }
 
     public function getDescription(): ?string

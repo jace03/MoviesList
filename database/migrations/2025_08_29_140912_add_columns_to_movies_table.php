@@ -13,14 +13,14 @@ return new class extends Migration
             $table->string('genre')->after('title');
             $table->string('decade')->after('genre');
             $table->string('holiday')->nullable()->after('decade');
-            $table->integer('rank')->unsigned()->after('holiday');
+            $table->integer('rating')->unsigned()->after('holiday');
         });
     }
 
     public function down(): void
     {
         Schema::table('movies', function (Blueprint $table) {
-            $table->dropColumn(['title', 'genre', 'decade', 'holiday', 'rank']);
+            $table->dropColumn(['title', 'genre', 'decade', 'holiday', 'rating']);
         });
     }
 };

@@ -54,15 +54,26 @@
                 </div>
 
                 <div class="mb-4">
-                    <label for="rank" class="block text-sm font-medium mb-2">Rank</label>
-                    <select name="rank"
-                            id="rank"
+                    <label for="rating" class="block text-sm font-medium mb-2">rating</label>
+                    <select name="rating"
+                            id="rating"
                             class="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">Select Rank</option>
+                        <option value="">Select rating</option>
                         @for ($i = 1; $i <= 10; $i++)
-                            <option value="{{ $i }}" {{ old('rank') == $i ? 'selected' : '' }}>{{ $i }}</option>
+                            <option value="{{ $i }}" {{ old('rating') == $i ? 'selected' : '' }}>{{ $i }}</option>
                         @endfor
                     </select>
+                </div>
+
+
+                <h4>Actors</h4>
+                <div id="actor-inputs">
+                    <div class="mb-3">
+                        <input type="text"
+                               class="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 actor-name"
+                               placeholder="Actor Name"
+                               oninput="handleActorInput(this)">
+                    </div>
                 </div>
 
                 <div class="mb-6">
@@ -88,3 +99,5 @@
         </div>
     </div>
 @endsection
+
+<script src="{{ asset('js/actor-inputs.js') }}"></script>

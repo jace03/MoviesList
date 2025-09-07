@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Entities\Actor;
 use App\Entities\Movie;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
@@ -18,24 +19,59 @@ class MovieController extends Controller
         $this->em = $em;
     }
 
+    public function editActors(int $id)
+    {
+        $movie = $this->em->find(Movie::class, $id);
+        $allActors = $this->em->getRepository(Actor::class)->findAll();
+
+        return view('movies.edit-actors', [
+            'movie' => $movie,
+            'allActors' => $allActors,
+        ]);
+    }
+
+    public function updateActors(Request $request, int $id)
+    {
+        $movie = $this->em->find(Movie::class, $id);
+        $actorIds = $request->input('actors', []);
+
+        // Clear existing
+        foreach ($movie->getActors() as $existing) {
+            $movie->removeActor($existing);
+        }
+
+        // Attach new
+        foreach ($actorIds as $actorId) {
+            $actor = $this->em->find(Actor::class, $actorId);
+            if ($actor) {
+                $movie->addActor($actor);
+            }
+        }
+
+        $this->em->flush();
+
+        return redirect()
+            ->route('movies.editActors', $movie->getId())
+            ->with('success', 'Actors updated.');
+    }
 
     public function index(Request $request)
     {
         $search = $request->get('search');
         $genreFilter = $request->get('genre');
-        $page = max((int) $request->get('page', 1), 1);
+        $page = max((int)$request->get('page', 1), 1);
         $limit = 15;
         $offset = ($page - 1) * $limit;
 
-        // Get all unique genres
         $genreQuery = $this->em->createQuery('SELECT DISTINCT m.genre FROM App\Entities\Movie m WHERE m.genre IS NOT NULL');
         $genres = array_column($genreQuery->getArrayResult(), 'genre');
 
-        // Build movie query
         $qb = $this->em->createQueryBuilder()
-            ->select('m')
-            ->from(\App\Entities\Movie::class, 'm')
-            ->orderBy('m.rank', 'ASC')
+            ->select('DISTINCT m')
+            ->from(Movie::class, 'm')
+            ->leftJoin('m.actors', 'a')
+            ->groupBy('m.id')
+            ->orderBy('m.rating', 'ASC')
             ->setFirstResult($offset)
             ->setMaxResults($limit);
 
@@ -49,12 +85,15 @@ class MovieController extends Controller
                 ->setParameter('genre', $genreFilter);
         }
 
-        $movies = $qb->getQuery()->getResult();
+        // Execute query with hydration hint
+        $query = $qb->getQuery();
+        $query->setHint(\Doctrine\ORM\Query::HINT_FORCE_PARTIAL_LOAD, true);
+        $movies = $query->getResult();
 
-        // Count total for pagination
+        // Count query for pagination
         $countQb = $this->em->createQueryBuilder()
             ->select('COUNT(m.id)')
-            ->from(\App\Entities\Movie::class, 'm');
+            ->from(Movie::class, 'm');
 
         if ($search) {
             $countQb->andWhere('m.title LIKE :search OR m.genre LIKE :search')
@@ -68,6 +107,7 @@ class MovieController extends Controller
 
         $total = $countQb->getQuery()->getSingleScalarResult();
 
+        // Build paginator
         $paginator = new LengthAwarePaginator(
             $movies,
             $total,
@@ -99,7 +139,7 @@ class MovieController extends Controller
             'title' => 'required|string|max:255',
             'genre' => 'nullable|string|max:255',
             'decade' => 'nullable|string|max:255',
-            'rank' => 'nullable|integer|min:1|max:10',
+            'rating' => 'nullable|integer|min:1|max:100',
             'description' => 'nullable|string',
         ]);
 
@@ -107,7 +147,7 @@ class MovieController extends Controller
         $movie->setTitle($request->input('title'));
         $movie->setGenre($request->input('genre'));
         $movie->setDecade($request->input('decade'));
-        $movie->setRank((int) $request->input('rank'));
+        $movie->setRating((int)$request->input('rating'));
         $movie->setDescription($request->input('description'));
         $movie->setCreatedAt(new \DateTimeImmutable());
         $movie->setUpdatedAt(new \DateTimeImmutable());
@@ -135,13 +175,16 @@ class MovieController extends Controller
      */
     public function edit(int $id)
     {
-        $movie = $this->em->find(Movie::class, $id);
-        if (!$movie) {
-            abort(404);
-        }
+        $movie     = $this->em->find(Movie::class, $id);
+        $allActors = $this->em->getRepository(Actor::class)->findAll();
 
-        return view('movies.edit', compact('movie'));
+        // 👇 Correct: first arg is the blade name, second is the data array
+        return view('movies.edit', [
+            'movie'     => $movie,
+            'allActors' => $allActors,
+        ]);
     }
+
 
     /**
      * @throws ORMException
@@ -149,33 +192,72 @@ class MovieController extends Controller
      */
     public function update(Request $request, int $id)
     {
+        // 1) Fetch movie
         $movie = $this->em->find(Movie::class, $id);
         if (!$movie) {
             abort(404);
         }
 
-        $validated = $request->validate([
+        // 2) Validate inputs
+        $data = $request->validate([
             'title' => 'nullable|string|max:255',
             'genre' => 'nullable|string|max:100',
             'decade' => 'nullable|string|max:100',
-            'rank' => 'integer|min:1|max:10',
+            'rating' => 'nullable|integer|min:1|max:100',
             'description' => 'nullable|string|max:1000',
             'holiday' => 'nullable|string|max:100',
+            'actor_ids' => 'nullable|array',
+            'actor_ids.*' => 'integer|exists:actors,id',
+            'new_actors' => 'nullable|array',
+            'new_actors.*' => 'string|max:255',
         ]);
 
-        $movie->setTitle($validated['title'] ?? '');
-        $movie->setGenre($validated['genre'] ?? '');
-        $movie->setDecade($validated['decade'] ?? '');
-        $movie->setRank($validated['rank'] ?? 10);
-        $movie->setDescription($validated['description'] ?? '');
-        $movie->setHoliday($validated['holiday'] ?? '');
+        // 3) Update scalar fields
+        $movie->setTitle($data['title'] ?? null);
+        $movie->setGenre($data['genre'] ?? null);
+        $movie->setDecade($data['decade'] ?? null);
+        $movie->setRating($data['rating'] ?? null);
+        $movie->setDescription($data['description'] ?? null);
+        $movie->setHoliday($data['holiday'] ?? null);
         $movie->setUpdatedAt(new \DateTimeImmutable());
 
+        // 4) Clear existing pivot associations
+        foreach ($movie->getActors() as $existing) {
+            $movie->removeActor($existing);
+        }
+
+        // 5) Attach selected existing actors
+        if (!empty($data['actor_ids'])) {
+            foreach ($data['actor_ids'] as $actorId) {
+                $actor = $this->em->find(Actor::class, $actorId);
+                if ($actor) {
+                    $movie->addActor($actor);
+                }
+            }
+        }
+
+        // 6) Create & attach brand-new actors
+        if (!empty($data['new_actors'])) {
+            foreach ($data['new_actors'] as $name) {
+                $trimmed = trim($name);
+                if ($trimmed === '') {
+                    continue;
+                }
+                $actor = new Actor();
+                $actor->setName($trimmed);
+                $movie->addActor($actor);
+                $this->em->persist($actor);
+            }
+        }
+
+        // 7) Final flush
         $this->em->flush();
 
-        return redirect()->route('movies.show', $movie->getId())
-            ->with('success', 'Movie updated successfully!');
+        return redirect()
+            ->route('movies.edit', $movie->getId())
+            ->with('success', 'Movie and actors updated successfully.');
     }
+
 
     /**
      * @throws ORMException

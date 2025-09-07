@@ -32,7 +32,7 @@ class CreateTestMovieCommand extends Command
         $movie->setName('Test Movie');
         $movie->setCategory('Comedy');
         $movie->setHoliday('Christmas');
-        $movie->setRank(1);
+        $movie->setRating(1);
 
         $em->persist($movie);
         $em->flush();

@@ -2468,8 +2468,8 @@
             ],
             "authors": [
                 {
-                    "name": "Frank de Jonge",
-                    "email": "info@frankdejonge.nl"
+                    "name": "Frating de Jonge",
+                    "email": "info@fratingdejonge.nl"
                 }
             ],
             "description": "File storage abstraction for PHP",
@@ -2524,8 +2524,8 @@
             ],
             "authors": [
                 {
-                    "name": "Frank de Jonge",
-                    "email": "info@frankdejonge.nl"
+                    "name": "Frating de Jonge",
+                    "email": "info@fratingdejonge.nl"
                 }
             ],
             "description": "Local filesystem adapter for Flysystem.",
@@ -2576,8 +2576,8 @@
             ],
             "authors": [
                 {
-                    "name": "Frank de Jonge",
-                    "email": "info@frankdejonge.nl"
+                    "name": "Frating de Jonge",
+                    "email": "info@fratingdejonge.nl"
                 }
             ],
             "description": "Mime-type detection for Flysystem",
@@ -2587,7 +2587,7 @@
             },
             "funding": [
                 {
-                    "url": "https://github.com/frankdejonge",
+                    "url": "https://github.com/fratingdejonge",
                     "type": "github"
                 },
                 {

@@ -27,9 +27,9 @@
                             </span>
                         @endif
 
-                        @if($movie->getRank())
+                        @if($movie->getrating())
                             <span class="inline-block bg-purple-900 text-purple-200 text-sm px-3 py-1 rounded-full">
-                                Rank: {{ $movie->getRank() }}
+                                rating: {{ $movie->getrating() }}
                             </span>
                         @endif
 
@@ -48,8 +48,8 @@
                     </div>
 
                     <div>
-                        <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wider mb-1">Rank</h3>
-                        <p class="text-lg">{{ $movie->getRank() ?? 'Not ranked' }}</p>
+                        <h3 class="text-sm font-medium text-gray-400 uppercase tracking-wider mb-1">rating</h3>
+                        <p class="text-lg">{{ $movie->getrating() ?? 'Not ratinged' }}</p>
                     </div>
 
                     <div>

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('genre');
             $table->string('decade');
             $table->string('holiday')->nullable(); // nullable in case not all movies are holiday-related
-            $table->integer('rank')->unsigned()->min(1)->max(100);
+            $table->unsignedInteger('rating');
             $table->timestamps();
         });
     }

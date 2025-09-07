@@ -24,10 +24,10 @@ class MovieRepository extends EntityRepository
         return $this->entityManager->find(Movie::class, $id, $lockMode, $lockVersion);
     }
 
-    public function findAllOrderedByRank(string $order = 'ASC'): array
+    public function findAllOrderedByRating(string $order = 'ASC'): array
     {
         return $this->createQueryBuilder('m')
-            ->orderBy('m.rank', $order)
+            ->orderBy('m.rating', $order)
             ->getQuery()
             ->getResult();
     }
