@@ -75,10 +75,34 @@
                         @endfor
                     </select>
                 </div>
-
-                {{--start of actors section--}}
-                <h4 class="text-lg font-semibold text-white">Actors</h4>
-
+                <div class="mb-4">
+                    <label for="holiday" class="block text-sm font-medium mb-2 text-white">Holiday</label>
+                    <select
+                        name="holiday"
+                        id="holiday"
+                        class="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                        <option value="">Select a holiday</option>
+                        @foreach (['Christmas', 'Halloween', 'New Year', 'Easter'] as $holiday)
+                            <option value="{{ $holiday }}"
+                                {{ old('holiday', isset($movie) ? $movie->getHoliday() : null) === $holiday ? 'selected' : '' }}
+                            >
+                                {{ $holiday }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                {{--end ofactors section--}}
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-lg font-semibold text-white">Actors</h4>
+                    <button
+                        type="button"
+                        id="add-actor-btn"
+                        class="text-green-500 text-2xl font-bold leading-none focus:outline-none"
+                        title="Add another actor"
+                    >+
+                    </button>
+                </div>
                 <div id="actor-inputs" class="space-y-3 mb-4">
                     @php
                         // collect existing actor names, or start with one blank
@@ -98,14 +122,6 @@
                         >
                     @endforeach
                 </div>
-
-                <button
-                    type="button"
-                    id="add-actor-btn"
-                    class="text-green-500 text-2xl font-bold leading-none focus:outline-none"
-                    title="Add another actor"
-                >+
-                </button>
                 {{-- End actors section --}}
 
                 <div class="mb-6">
@@ -137,7 +153,6 @@
     </div>
 
     <script>
-        // expose movieId to actor-inputs.js if needed
         const movieId = @json($movie->getId());
     </script>
 @endsection

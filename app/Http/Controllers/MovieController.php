@@ -32,6 +32,7 @@ class MovieController extends Controller
 
     public function updateActors(Request $request, int $id)
     {
+        dd($request->all());
         $movie = $this->em->find(Movie::class, $id);
         $actorIds = $request->input('actors', []);
 
@@ -142,6 +143,7 @@ class MovieController extends Controller
             'rating' => 'nullable|integer|min:1|max:100',
             'description' => 'nullable|string',
         ]);
+        $actorNames = $request->input('actor_names', []);
 
         $movie = new Movie();
         $movie->setTitle($request->input('title'));
@@ -151,6 +153,18 @@ class MovieController extends Controller
         $movie->setDescription($request->input('description'));
         $movie->setCreatedAt(new \DateTimeImmutable());
         $movie->setUpdatedAt(new \DateTimeImmutable());
+
+        foreach ($actorNames as $name) {
+            $trimmed = trim($name);
+            if ($trimmed === '') {
+                continue;
+            }
+
+            $actor = new Actor();
+            $actor->setName($trimmed);
+            $movie->addActor($actor); // hydrates both sides if addActor() is defined correctly
+            $this->em->persist($actor);
+        }
 
         $this->em->persist($movie);
         $this->em->flush();
@@ -175,15 +189,15 @@ class MovieController extends Controller
      */
     public function edit(int $id)
     {
-        $movie     = $this->em->find(Movie::class, $id);
-        $allActors = $this->em->getRepository(Actor::class)->findAll();
+        $movie = $this->em->getRepository(Movie::class)->find($id);
 
-        // 👇 Correct: first arg is the blade name, second is the data array
-        return view('movies.edit', [
-            'movie'     => $movie,
-            'allActors' => $allActors,
-        ]);
+        if (!$movie) {
+            abort(404);
+        }
+
+        return view('movies.edit', compact('movie'));
     }
+
 
 
     /**
@@ -208,8 +222,8 @@ class MovieController extends Controller
             'holiday' => 'nullable|string|max:100',
             'actor_ids' => 'nullable|array',
             'actor_ids.*' => 'integer|exists:actors,id',
-            'new_actors' => 'nullable|array',
-            'new_actors.*' => 'string|max:255',
+            'actor_names' => 'nullable|array',
+            'actor_names.*' => 'string|max:255',
         ]);
 
         // 3) Update scalar fields
@@ -221,7 +235,7 @@ class MovieController extends Controller
         $movie->setHoliday($data['holiday'] ?? null);
         $movie->setUpdatedAt(new \DateTimeImmutable());
 
-        // 4) Clear existing pivot associations
+        // 4) Clear existing actor associations
         foreach ($movie->getActors() as $existing) {
             $movie->removeActor($existing);
         }
@@ -236,13 +250,14 @@ class MovieController extends Controller
             }
         }
 
-        // 6) Create & attach brand-new actors
-        if (!empty($data['new_actors'])) {
-            foreach ($data['new_actors'] as $name) {
+        // 6) Create & attach new actors from actor_names[]
+        if (!empty($data['actor_names'])) {
+            foreach ($data['actor_names'] as $name) {
                 $trimmed = trim($name);
                 if ($trimmed === '') {
                     continue;
                 }
+
                 $actor = new Actor();
                 $actor->setName($trimmed);
                 $movie->addActor($actor);
@@ -254,7 +269,7 @@ class MovieController extends Controller
         $this->em->flush();
 
         return redirect()
-            ->route('movies.edit', $movie->getId())
+            ->route('movies.index')
             ->with('success', 'Movie and actors updated successfully.');
     }
 

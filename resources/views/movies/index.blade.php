@@ -57,8 +57,9 @@
                             @if ($movie->getActors()->count())
                                 {{ implode(', ', $movie->getActors()->map(fn($actor) => $actor->getName())->toArray()) }}
                             @else
-
+                                <span class="italic text-gray-500">No actors listed</span>
                             @endif
+
                         </td>
 
                         <td class="px-4 py-2 text-sm text-gray-300 space-x-2">

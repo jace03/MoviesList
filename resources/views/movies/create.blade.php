@@ -65,25 +65,44 @@
                     </select>
                 </div>
 
-
-                <h4>Actors</h4>
-                <div id="actor-inputs">
-                    <div class="mb-3">
-                        <input type="text"
-                               class="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 actor-name"
-                               placeholder="Actor Name"
-                               oninput="handleActorInput(this)">
-                    </div>
+                <div class="mb-4">
+                    <label for="holiday" class="block text-sm font-medium mb-2 text-white">Holiday</label>
+                    <select
+                        name="holiday"
+                        id="holiday"
+                        class="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                        <option value="">Select a holiday</option>
+                        @foreach (['Christmas', 'Halloween', 'New Year', 'Easter'] as $holiday)
+                            <option value="{{ $holiday }}"
+                                {{ old('holiday', isset($movie) ? $movie->getHoliday() : null) === $holiday ? 'selected' : '' }}
+                            >
+                                {{ $holiday }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
 
-                <div class="mb-6">
-                    <label for="description" class="block text-sm font-medium mb-2">Note</label>
-                    <textarea name="description"
-                              id="description"
-                              rows="4"
-                              class="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                              placeholder="Enter movie description">{{ old('description') }}</textarea>
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-lg font-semibold text-white">Actors</h4>
+                    <button
+                        type="button"
+                        id="add-actor-btn"
+                        class="text-green-500 text-2xl font-bold leading-none focus:outline-none"
+                        title="Add another actor"
+                    >+
+                    </button>
                 </div>
+                <div id="actor-inputs" class="space-y-3 mb-4">
+                    <input
+                        type="text"
+                        name="actor_names[]"
+                        class="actor-name w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Actor Name"
+                    >
+                </div>
+
+
 
                 <div class="flex gap-4">
                     <button type="submit"
@@ -101,3 +120,17 @@
 @endsection
 
 <script src="{{ asset('js/actor-inputs.js') }}"></script>
+<script>
+    document.getElementById('add-actor-btn').addEventListener('click', function () {
+        const container = document.getElementById('actor-inputs');
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.name = 'actor_names[]';
+        input.placeholder = 'Actor Name';
+        input.className = 'actor-name w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500';
+        container.appendChild(input);
+    });
+</script>
+@push('scripts')
+    <script src="{{ asset('javascript/actor-inputs.js') }}"></script>
+@endpush

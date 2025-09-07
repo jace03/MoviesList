@@ -46,25 +46,44 @@ class Movie
     #[ORM\JoinTable(name: 'movie_actor')]
     private Collection $actors;
 
+//    #[ORM\ManyToMany(targetEntity: Holiday::class, inversedBy: 'movies')]
+//    #[ORM\JoinTable(name: 'movie_holiday')]
+//    private Collection $holidays;
+
     public function __construct()
     {
         $this->actors = new ArrayCollection();
+        $this->holidays = new ArrayCollection();
     }
-    public function getActors(): Collection
-    {
-        return $this->actors;
-    }
+    public function getActors(): Collection { return $this->actors; }
+
     public function addActor(Actor $actor): void
     {
         if (!$this->actors->contains($actor)) {
             $this->actors->add($actor);
-            $actor->addMovie($this);
+            $actor->addMovie($this); // ensure inverse side is updated
         }
     }
-    public function removeActor(Actor $actor): void
+    public function removeActor(Actor $actor): void { /* hydration logic */ }
+
+
+    public function getHolidays(): Collection { return $this->holidays; }
+    public function setHoliday(?string $holiday): void { $this->holiday = $holiday;}
+        public function addHoliday(Holiday $holiday): void
     {
-        if ($this->actors->removeElement($actor)) {
-            $actor->removeMovie($this);
+        if (!$this->holidays->contains($holiday)) {
+            $this->holidays->add($holiday);
+            if (!$holiday->getMovies()->contains($this)) {
+                $holiday->getMovies()->add($this);
+            }
+        }
+    }
+
+    public function removeHoliday(Holiday $holiday): void
+    {
+        if ($this->holidays->contains($holiday)) {
+            $this->holidays->removeElement($holiday);
+            $holiday->getMovies()->removeElement($this);
         }
     }
 
@@ -135,11 +154,6 @@ class Movie
     public function getHoliday(): ?string
     {
         return $this->holiday;
-    }
-
-    public function setHoliday(?string $holiday): void
-    {
-        $this->holiday = $holiday;
     }
 
     public function getCreatedAt(): ?\DateTimeImmutable

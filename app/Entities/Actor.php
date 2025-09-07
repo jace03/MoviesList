@@ -20,6 +20,10 @@ class Actor
     #[ORM\Column(type: 'string', length: 255)]
     private string $name;
 
+    #[ORM\ManyToMany(targetEntity: Actor::class, inversedBy: 'movies')]
+    #[ORM\JoinTable(name: 'movie_actor')]
+    private Collection $actors;
+
     #[ORM\ManyToMany(targetEntity: Movie::class, mappedBy: 'actors')]
     private Collection $movies;
 
@@ -27,8 +31,31 @@ class Actor
     {
         $this->movies = new ArrayCollection();
     }
+    public function addMovie(Movie $movie): void
+    {
+        if (!$this->movies->contains($movie)) {
+            $this->movies->add($movie);
+        }
+    }
 
-    public function getMovies(): Collection
+    public function removeMovie(Movie $movie): void
+    {
+        if ($this->movies->contains($movie)) {
+            $this->movies->removeElement($movie);
+            if ($movie->getActors()->contains($this)) {
+                $movie->removeActor($this);
+            }
+        }
+    }
+    public function getId(): int { return $this->id; }
+    public function getName(): string { return $this->name; }
+    public function setName(string $name): void { $this->name = $name; }
+
+    public function getMovies(): Collection { return $this->movies; }
+
+
+
+    public function getMovie(): Collection
     {
         return $this->movies;
     }
@@ -36,35 +63,5 @@ class Actor
     {
         return $this->movies;
     }
-    public function addMovie(Movie $movie): void
-    {
-        if (!$this->movies->contains($movie)) {
-            $this->movies->add($movie);
-            $movie->addActor($this);
-        }
-    }
-
-    public function removeMovie(Movie $movie): void
-    {
-        if ($this->movies->removeElement($movie)) {
-            $movie->removeActor($this);
-        }
-    }
-
-    public function getId(): int
-    {
-        return $this->id;
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): void
-    {
-        $this->name = $name;
-    }
-
 
 }
