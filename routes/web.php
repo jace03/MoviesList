@@ -3,7 +3,8 @@
 use App\Http\Controllers\ActorController;
 use App\Http\Controllers\MovieController;
 use Illuminate\Support\Facades\Route;
-
+// Create a test file in storage/logs/test.txt
+file_put_contents(storage_path('logs/test.txt'), 'Write test: ' . now());
 Route::get('/', function () {
     return view('welcome');
 });

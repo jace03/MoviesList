@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('title');
             $table->string('genre');
             $table->string('decade');
+            $table->text('description')->nullable();
             $table->string('holiday')->nullable(); // nullable in case not all movies are holiday-related
             $table->unsignedInteger('rating');
             $table->timestamps();

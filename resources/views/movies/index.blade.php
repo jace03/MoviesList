@@ -10,7 +10,6 @@
                 + Add Movie
             </a>
 
-
             <form method="GET" action="{{ route('movies.index') }}" class="mb-6 flex flex-wrap gap-4 items-center">
                 <input
                     type="text"
@@ -19,6 +18,11 @@
                     placeholder="Search by title or genre..."
                     class="p-2 border rounded bg-gray-800 text-white placeholder-gray-500 w-full sm:w-1/2"
                 />
+                <select name="holiday" onchange="this.form.submit()" class="p-2 border rounded bg-gray-800 text-white">
+                    <option value="">All Holidays</option>
+                    <option value="Halloween" {{ request('holiday') === 'Halloween' ? 'selected' : '' }}>Halloween</option>
+                    <option value="Christmas" {{ request('holiday') === 'Christmas' ? 'selected' : '' }}>Christmas</option>
+                </select>
 
                 <select name="genre" onchange="this.form.submit()" class="p-2 border rounded bg-gray-800 text-white">
                     <option value="">All Genres</option>
@@ -33,6 +37,7 @@
                     Search
                 </button>
             </form>
+
             <table class="min-w-full divide-y divide-gray-700">
                 <thead class="bg-gray-800">
                 <tr>
@@ -47,7 +52,7 @@
                 </thead>
                 <tbody class="bg-gray-800 divide-y divide-gray-700">
                 @forelse ($movies as $movie)
-                    <tr class="hover:bg-gray-700">
+                    <tr class="hover:bg-gray-700" data-movie-id="{{ $movie->getId() }}">
                         <td class="px-4 py-2 text-sm text-gray-300">{{ $movie->getRating() ?? 'N/A' }}</td>
                         <td class="px-4 py-2 text-sm text-gray-300">{{ $movie->getTitle() ?? 'N/A' }}</td>
                         <td class="px-4 py-2 text-sm text-gray-300">{{ $movie->getGenre() ?? 'N/A' }}</td>
@@ -59,9 +64,7 @@
                             @else
                                 <span class="italic text-gray-500">No actors listed</span>
                             @endif
-
                         </td>
-
                         <td class="px-4 py-2 text-sm text-gray-300 space-x-2">
                             <a href="{{ route('movies.show', $movie->getId()) }}"
                                class="text-blue-400 hover:text-blue-600">View</a>
@@ -80,20 +83,27 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-4 py-2 text-center text-gray-400">No movies found.</td>
+                        <td colspan="7" class="px-4 py-2 text-center text-gray-400">No movies found.</td>
                     </tr>
                 @endforelse
                 </tbody>
             </table>
+
             <div class="mt-6">
                 {{ $paginator->withQueryString()->links() }}
             </div>
-
         </div>
     </div>
 @endsection
-<script>
-    const movieId = @json($movie->getId());
-</script>
 
-<script src="{{ asset('javascript/actor-inputs.js') }}"></script>
+@section('scripts')
+    <script>
+        const movieIds = Array.from(document.querySelectorAll('tr[data-movie-id]'))
+            .map(row => row.dataset.movieId);
+
+        console.log('Loaded movie IDs:', movieIds);
+        // You can now use movieIds in your JS logic
+    </script>
+
+    <script src="{{ asset('javascript/actor-inputs.js') }}"></script>
+@endsection

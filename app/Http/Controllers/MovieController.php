@@ -19,6 +19,10 @@ class MovieController extends Controller
         $this->em = $em;
     }
 
+    /**
+     * @throws OptimisticLockException
+     * @throws ORMException
+     */
     public function editActors(int $id)
     {
         $movie = $this->em->find(Movie::class, $id);
@@ -36,12 +40,12 @@ class MovieController extends Controller
         $movie = $this->em->find(Movie::class, $id);
         $actorIds = $request->input('actors', []);
 
-        // Clear existing
-        foreach ($movie->getActors() as $existing) {
+        $existingActors = $movie->getActors()->toArray();
+        foreach ($existingActors as $existing) {
             $movie->removeActor($existing);
         }
 
-        // Attach new
+
         foreach ($actorIds as $actorId) {
             $actor = $this->em->find(Actor::class, $actorId);
             if ($actor) {
@@ -58,8 +62,10 @@ class MovieController extends Controller
 
     public function index(Request $request)
     {
+        var_dump($request->all());
         $search = $request->get('search');
         $genreFilter = $request->get('genre');
+        $holidayFilter = $request->get('holiday'); // ✅ Added
         $page = max((int)$request->get('page', 1), 1);
         $limit = 15;
         $offset = ($page - 1) * $limit;
@@ -77,38 +83,59 @@ class MovieController extends Controller
             ->setMaxResults($limit);
 
         if ($search) {
-            $qb->andWhere('m.title LIKE :search OR m.genre LIKE :search')
-                ->setParameter('search', '%' . $search . '%');
+            $qb->andWhere(
+                $qb->expr()->orX(
+                    $qb->expr()->like('m.title', ':search'),
+                    $qb->expr()->like('m.genre', ':search')
+                )
+            )->setParameter('search', '%' . $search . '%');
         }
+
 
         if ($genreFilter) {
             $qb->andWhere('m.genre = :genre')
                 ->setParameter('genre', $genreFilter);
         }
 
-        // Execute query with hydration hint
+        if ($holidayFilter) { // ✅ Added
+            $qb->andWhere('m.holiday = :holiday')
+                ->setParameter('holiday', $holidayFilter);
+        }
+
         $query = $qb->getQuery();
         $query->setHint(\Doctrine\ORM\Query::HINT_FORCE_PARTIAL_LOAD, true);
         $movies = $query->getResult();
 
-        // Count query for pagination
         $countQb = $this->em->createQueryBuilder()
             ->select('COUNT(m.id)')
             ->from(Movie::class, 'm');
 
         if ($search) {
-            $countQb->andWhere('m.title LIKE :search OR m.genre LIKE :search')
-                ->setParameter('search', '%' . $search . '%');
+            $countQb->andWhere(
+                $countQb->expr()->orX(
+                    $qb->expr()->orX(
+                        $qb->expr()->like('m.title', ':search'),
+                        $qb->expr()->like('m.genre', ':search'),
+                        $qb->expr()->like('m.description', ':search'),
+                        $qb->expr()->like('m.holiday', ':search')
+                    )
+                )
+            )->setParameter('search', '%' . $search . '%');
         }
+
 
         if ($genreFilter) {
             $countQb->andWhere('m.genre = :genre')
                 ->setParameter('genre', $genreFilter);
         }
 
+        if ($holidayFilter) { // ✅ Added
+            $countQb->andWhere('m.holiday = :holiday')
+                ->setParameter('holiday', $holidayFilter);
+        }
+
         $total = $countQb->getQuery()->getSingleScalarResult();
 
-        // Build paginator
         $paginator = new LengthAwarePaginator(
             $movies,
             $total,
@@ -122,18 +149,16 @@ class MovieController extends Controller
             'genres' => $genres,
             'activeGenre' => $genreFilter,
             'search' => $search,
+            'holiday' => $holidayFilter, // ✅ Added
             'paginator' => $paginator,
         ]);
     }
-
 
     public function create()
     {
         return view('movies.create');
     }
 
-    /**
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -162,7 +187,7 @@ class MovieController extends Controller
 
             $actor = new Actor();
             $actor->setName($trimmed);
-            $movie->addActor($actor); // hydrates both sides if addActor() is defined correctly
+            $movie->addActor($actor);
             $this->em->persist($actor);
         }
 
@@ -183,10 +208,6 @@ class MovieController extends Controller
         return view('movies.show', compact('movie'));
     }
 
-    /**
-     * @throws OptimisticLockException
-     * @throws ORMException
-     */
     public function edit(int $id)
     {
         $movie = $this->em->getRepository(Movie::class)->find($id);
@@ -198,21 +219,18 @@ class MovieController extends Controller
         return view('movies.edit', compact('movie'));
     }
 
-
-
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException
-     */
     public function update(Request $request, int $id)
     {
-        // 1) Fetch movie
         $movie = $this->em->find(Movie::class, $id);
         if (!$movie) {
             abort(404);
         }
-
-        // 2) Validate inputs
+        $request->merge([
+            'actor_names' => array_filter(
+                $request->input('actor_names', []),
+                fn($name) => is_string($name) && trim($name) !== ''
+            )
+        ]);
         $data = $request->validate([
             'title' => 'nullable|string|max:255',
             'genre' => 'nullable|string|max:100',
@@ -226,7 +244,6 @@ class MovieController extends Controller
             'actor_names.*' => 'string|max:255',
         ]);
 
-        // 3) Update scalar fields
         $movie->setTitle($data['title'] ?? null);
         $movie->setGenre($data['genre'] ?? null);
         $movie->setDecade($data['decade'] ?? null);
@@ -235,12 +252,10 @@ class MovieController extends Controller
         $movie->setHoliday($data['holiday'] ?? null);
         $movie->setUpdatedAt(new \DateTimeImmutable());
 
-        // 4) Clear existing actor associations
         foreach ($movie->getActors() as $existing) {
             $movie->removeActor($existing);
         }
 
-        // 5) Attach selected existing actors
         if (!empty($data['actor_ids'])) {
             foreach ($data['actor_ids'] as $actorId) {
                 $actor = $this->em->find(Actor::class, $actorId);
@@ -250,7 +265,6 @@ class MovieController extends Controller
             }
         }
 
-        // 6) Create & attach new actors from actor_names[]
         if (!empty($data['actor_names'])) {
             foreach ($data['actor_names'] as $name) {
                 $trimmed = trim($name);
@@ -265,7 +279,6 @@ class MovieController extends Controller
             }
         }
 
-        // 7) Final flush
         $this->em->flush();
 
         return redirect()
@@ -273,11 +286,6 @@ class MovieController extends Controller
             ->with('success', 'Movie and actors updated successfully.');
     }
 
-
-    /**
-     * @throws ORMException
-     * @throws OptimisticLockException|\Doctrine\ORM\Exception\ORMException
-     */
     public function destroy(int $id)
     {
         $movie = $this->em->find(Movie::class, $id);
@@ -291,4 +299,10 @@ class MovieController extends Controller
         return redirect()->route('movies.index')
             ->with('success', 'Movie deleted successfully!');
     }
+
 }
+
+
+
+
+

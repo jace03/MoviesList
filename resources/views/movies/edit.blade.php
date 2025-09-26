@@ -116,7 +116,7 @@
                         <input
                             type="text"
                             name="actor_names[]"
-                            value="{{ $name }}"
+                            value="{{ is_string($name) ? $name : '' }}"
                             class="actor-name w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Actor Name"
                         >
