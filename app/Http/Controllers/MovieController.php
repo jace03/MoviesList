@@ -62,7 +62,6 @@ class MovieController extends Controller
 
     public function index(Request $request)
     {
-        var_dump($request->all());
         $search = $request->get('search');
         $genreFilter = $request->get('genre');
         $holidayFilter = $request->get('holiday'); // ✅ Added
