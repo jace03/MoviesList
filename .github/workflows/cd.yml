@@ -1,0 +1,75 @@
+name: CD
+
+on:
+  # Manual trigger from the GitHub Actions UI — gives you full control
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: "production"
+        type: choice
+        options:
+          - staging
+          - production
+
+  # Automatically deploy when CI passes on main
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment || 'production' }}
+    runs-on: ubuntu-latest
+    # Only run automatic deploys when CI succeeded
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+
+    environment:
+      name: ${{ github.event.inputs.environment || 'production' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # ── Build frontend assets ──────────────────
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+
+      # ── Install PHP dependencies ───────────────
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: pdo, pdo_sqlite, sqlite3
+          coverage: none
+
+      - name: Install Composer dependencies (production)
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
+      # ── Deployment step ───────────────────────
+      # Replace the echo below with your actual deploy command, e.g.:
+      #   - rsync / scp to a VPS
+      #   - a cloud CLI deploy command (AWS, GCP, Azure, Fly.io, etc.)
+      #   - a webhook call to a hosting provider
+      - name: Deploy application
+        run: |
+          echo "🚀 Deploying to ${{ github.event.inputs.environment || 'production' }}..."
+          # TODO: replace this with your real deployment command
+          echo "✅ Deployment complete."
