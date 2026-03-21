@@ -47,7 +47,9 @@ class MovieRepository extends EntityRepository
 
     public function findAll(): array
     {
-        return $this->entityManager->getRepository(Movie::class)->findAll();
+        return $this->createQueryBuilder('m')
+            ->getQuery()
+            ->getResult();
     }
 
 }

@@ -52,8 +52,8 @@ class Movie
 
     public function __construct()
     {
-        $this->actors = new ArrayCollection();
-        $this->holidays = new ArrayCollection();
+//        $this->actors = new ArrayCollection();
+//        $this->holidays = new ArrayCollection();
     }
     public function getActors(): Collection { return $this->actors; }
 

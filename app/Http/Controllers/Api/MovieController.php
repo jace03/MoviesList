@@ -24,12 +24,27 @@ class MovieController extends Controller
     }
 
 
-    public function index()
+    public function index(): JsonResponse
     {
-        $movies = $this->em->getRepository(\App\Entities\Movie::class)->findAll();
+        $movies = $this->em->getRepository(Movie::class)->findAll();
 
-        return view('movies.index', compact('movies'));
+        $moviesArray = array_map(function($movie) {
+            return [
+                'id' => $movie->getId(),
+                'title' => $movie->getTitle(),
+                'genre' => $movie->getGenre(), // or convert to string if it's a relationship
+                'decade' => $movie->getDecade(),
+                'description' => $movie->getDescription(),
+                'holiday' => $movie->getHoliday(),
+                'rating' => $movie->getRating(),
+                'created_at' => $movie->getCreatedAt()?->format('Y-m-d H:i:s'),
+                'updated_at' => $movie->getUpdatedAt()?->format('Y-m-d H:i:s'),
+            ];
+        }, $movies);
+
+        return response()->json($moviesArray);
     }
+
 
 
 

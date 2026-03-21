@@ -4,17 +4,11 @@ export interface Actor {
 }
 
 export interface Movie {
-  id: number;
-  title: string;
-  genre?: string | null;
-  decade?: string | null;
-  rating?: number | null;
-  holiday?: string | null;
-  description?: string | null;
-  actors: Actor[];
-  created_at?: string | null;
-  updated_at?: string | null;
+    id: number;
+    title: string;
+    year: number;
 }
+
 
 export type MovieCreatePayload = {
   title: string;
@@ -25,6 +19,6 @@ export type MovieCreatePayload = {
   description?: string;
   actor_names?: string[];
 };
-
+console.log('test');
 export type MovieUpdatePayload = Partial<MovieCreatePayload>;
 
